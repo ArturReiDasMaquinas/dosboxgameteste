@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rayman DOS Demo - Arcade de Preservação</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/js-dos/6.22.1/js-dos.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-dos/6.22.1/js-dos.js"></script>
+    
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -47,7 +51,7 @@
             margin-bottom: 20px;
         }
 
-        /* Container do Emulador (Proporção clássica 4:3 do DOS) */
+        /* Container do Emulador (Proporção clássica 4:3) */
         .emulator-wrapper {
             width: 800px;
             height: 600px;
@@ -60,7 +64,7 @@
             position: relative;
         }
 
-        /* FILTRO CRT (Scanlines e Vinheta de Monitor de Tubo) */
+        /* FILTRO CRT MÁGICO (Scanlines e efeito de Monitor de Tubo) */
         .emulator-wrapper::after {
             content: " ";
             display: block;
@@ -79,7 +83,12 @@
             height: 100%;
         }
 
-        /* Tela de Capa / Botão de Iniciar Obligatório pelo Navegador */
+        /* Oculta as barras e botões nativos do JS-DOS para manter o visual limpo */
+        .jsdos-footer, .jsdos-header, .jsdos-sidebar {
+            display: none !important;
+        }
+
+        /* Tela de Capa / Botão de Iniciar */
         #start-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -129,10 +138,9 @@
         <div class="subtitle">MS-DOS Demo Version Preservation</div>
 
         <div class="emulator-wrapper">
-            
             <div id="start-overlay" onclick="iniciarJogo()">
                 <button class="start-btn">🕹️ INICIAR DEMO</button>
-                <div class="start-hint">Clique para carregar o WebAssembly e liberar o som</div>
+                <div class="start-hint">Clique para carregar o emulador sem travas</div>
             </div>
 
             <div id="game"></div>
@@ -140,22 +148,17 @@
     </div>
 
     <script>
-        EJS_player = '#game';
-        EJS_core = 'dos';
-        EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
-        EJS_gameUrl = 'rayman_demo.zip'; 
-        EJS_startOnLoaded = true;
-        EJS_dosConfig = "[autoexec]\nmount c .\nc:\nRAYMAN.EXE\n";
-
-        // Função que injeta o script do emulador apenas APÓS o clique do usuário
         function iniciarJogo() {
-            // Esconde a tela de overlay
+            // Remove a tela de boot inicial
             document.getElementById('start-overlay').style.display = 'none';
             
-            // Cria e injeta o script do EmulatorJS dinamicamente de forma segura
-            const script = document.createElement('script');
-            script.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
-            document.body.appendChild(script);
+            // Inicializa o motor JS-DOS apontando para os arquivos livres da Cloudflare
+            Dos(document.getElementById("game"), {
+                wdosboxUrl: "https://cdnjs.cloudflare.com/ajax/libs/js-dos/6.22.1/wdosbox.js"
+            }).then(function (runtime) {
+                // Baixa o seu zip e roda o executável RAYMAN.EXE automaticamente
+                runtime.boot("rayman_demo.zip", ["RAYMAN.EXE"]);
+            });
         }
     </script>
 
